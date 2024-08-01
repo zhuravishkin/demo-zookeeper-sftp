@@ -1,0 +1,16 @@
+{
+  "sftp_host": "192.168.1.13",
+  "sftp_port": 22,
+  "user": "user",
+  "password": "sudo",
+  "remote_file_path": "/home/user/.sftp",
+  "file_extension": ".csv",
+  "skip_row": 1,
+  "file_count": 1,
+  "delimiter": ",",
+  "is_recursively": false,
+  "executor_initial_delay_sec": 1,
+  "executor_period_sec": 10,
+  "zk_connection": "192.168.1.13:2181",
+  "lock_name": "dpi"
+}

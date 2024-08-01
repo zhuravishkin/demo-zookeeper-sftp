@@ -1,0 +1,6 @@
+service:
+  nodes-path: ${NODES_PATH:/app}
+  lock-path: ${LOCK_PATH:/lock}
+  session-timeout-ms: ${SESSION_TIMEOUT_MS:30000}
+  connection-timeout-ms: ${CONNECTION_TIMEOUT_MS:15000}
+  delayed-start-sec: ${DELAYED_START_SEC:10}
