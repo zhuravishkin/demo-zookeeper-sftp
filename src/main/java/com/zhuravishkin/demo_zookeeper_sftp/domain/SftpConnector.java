@@ -119,14 +119,14 @@ public class SftpConnector implements CuratorWatcher {
 
     @SneakyThrows
     private void connectToSftp(String nodeNumber, int nodeCount) {
-        log.info("connection start");
+        log.info("Connection start");
         String tmpLockPath = zkClient.create()
                 .creatingParentsIfNeeded()
                 .withMode(CreateMode.EPHEMERAL)
                 .forPath(zkLockPath + FILE_SEPARATOR + nodeNumber);
-        log.info("nodeNumber: " + nodeNumber);
-        log.info("nodes in doConnect: " + nodes);
-        log.info("lockPath: " + tmpLockPath);
+        log.info("Node number: " + nodeNumber);
+        log.info("Nodes in connection: " + nodes);
+        log.info("lock path: " + tmpLockPath);
 
         Session session = null;
         ChannelSftp channelSftp = null;
@@ -144,14 +144,14 @@ public class SftpConnector implements CuratorWatcher {
                     sftpConfiguration.remoteFilePath(),
                     fileNameTimeMap,
                     sftpConfiguration.isRecursively());
-            log.info("fileNameTimeMap size: " + fileNameTimeMap.size());
+            log.info("FileName+- Time map size: " + fileNameTimeMap.size());
             Map<String, Long> filteredMap = fileNameTimeMap.entrySet()
                     .stream()
                     .filter(stringLongEntry -> {
                         String filename = stringLongEntry.getKey();
                         int abs = Math.abs(filename.hashCode() % nodeCount);
-                        log.info("filename: " + filename);
-                        log.info("hashCode: " + abs);
+                        log.info("Filename: " + filename);
+                        log.info("HashCode: " + abs);
 
                         return abs == Integer.parseInt(nodeNumber);
                     })
@@ -178,7 +178,7 @@ public class SftpConnector implements CuratorWatcher {
                     log.error(e.getMessage(), e);
                 }
             }
-            log.info("connection completed");
+            log.info("Connection completed");
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         } finally {
@@ -222,7 +222,7 @@ public class SftpConnector implements CuratorWatcher {
             Thread.currentThread().interrupt();
             throw new RuntimeException(e);
         }
-        log.info("disconnect executor: " + termination);
+        log.info("Disconnect executor: " + termination);
     }
 
     @Override
@@ -230,7 +230,7 @@ public class SftpConnector implements CuratorWatcher {
         if (!isDisconnected) {
             setWatcher();
         }
-        log.info("WatchedEvent start: " + event.getType());
+        log.info("Watched event start: " + event.getType());
 
         List<String> newNodes = watchNodes();
         if (nodes.size() > newNodes.size() && !newNodes.isEmpty()) {
@@ -242,21 +242,21 @@ public class SftpConnector implements CuratorWatcher {
             }
         }
         nodes = watchNodes();
-        log.info("watched event nodes: " + nodes);
+        log.info("Watched event nodes: " + nodes);
 
         log.info("REBALANCING START");
         if (Objects.nonNull(scheduledFuture)) {
-            log.info("task is canceled : " + scheduledFuture.cancel(false));
+            log.info("Task is canceled : " + scheduledFuture.cancel(false));
         }
 
         List<String> lockChildren = zkClient.getChildren()
                 .forPath(zkLockPath);
-        log.info("WatchedEvent lock nodes: " + lockChildren);
+        log.info("Watched event lock nodes: " + lockChildren);
 
         while (!lockChildren.isEmpty()) {
             lockChildren = zkClient.getChildren()
                     .forPath(zkLockPath);
-            log.info("watched event lock nodes: " + lockChildren);
+            log.info("Watched event lock nodes: " + lockChildren);
             TimeUnit.SECONDS.sleep(1);
         }
 
@@ -285,12 +285,12 @@ public class SftpConnector implements CuratorWatcher {
         zkClient.getChildren()
                 .usingWatcher(this)
                 .forPath(zkNodesPath);
-        log.info("watcher set");
+        log.info("Watcher set");
     }
 
     @SneakyThrows
     public void selectingAndCreatingNode() {
-        log.info("node selection start");
+        log.info("Node selection start");
         int nextFolderNumber = getNextFolder(zkNodesPath, zkClient);
 
         Stat isNodeExist = zkClient.checkExists()
@@ -310,17 +310,17 @@ public class SftpConnector implements CuratorWatcher {
                     .forPath(zkNodesPath + FILE_SEPARATOR + nextFolderNumber);
 
             nodeNumber = ZKPaths.getNodeFromPath(fullPath);
-            log.info("node full path: " + fullPath);
-            log.info("node created: " + nodeNumber);
+            log.info("Node full path: " + fullPath);
+            log.info("Node created: " + nodeNumber);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
-        log.info("node selection finished");
+        log.info("Node selection finished");
     }
 
     private static int getNextFolder(String zkPath, CuratorFramework client) throws Exception {
         List<String> children = client.getChildren().forPath(zkPath);
-        log.info("children: " + children);
+        log.info("Children: " + children);
 
         int nextFolderNumber = 0;
         for (String s : children) {
@@ -334,21 +334,18 @@ public class SftpConnector implements CuratorWatcher {
     }
 
     private void startExecutor(int nodeCount) {
-        log.info("executor start");
-        synchronized (zkLock) {
-            if (delayedStartFutureTask != null && delayedStartFutureTask.isDone()) {
-                delayedStartFutureTask.cancel(false);
-            }
+        log.info("Executor start");
+        if (delayedStartFutureTask != null && delayedStartFutureTask.isDone()) {
+            delayedStartFutureTask.cancel(false);
+        }
 
-            delayedStartFutureTask = delayedStartScheduler.schedule(() -> {
+        delayedStartFutureTask = delayedStartScheduler.schedule(() ->
                 this.scheduledFuture = executor.scheduleAtFixedRate(
                         () -> connectToSftp(nodeNumber, nodeCount),
                         sftpConfiguration.initialDelay(),
                         sftpConfiguration.period(),
                         TimeUnit.SECONDS
-                );
-            }, properties.getDelayedStartSec(), TimeUnit.SECONDS);
-        }
-        log.info("executor finish");
+                ), properties.getDelayedStartSec(), TimeUnit.SECONDS);
+        log.info("Executor finish");
     }
 }

@@ -41,19 +41,19 @@ public class DemoZookeeperSftpApplication implements CommandLineRunner {
             }
         }).start();
 
-        new Thread(() -> {
-            try {
-                SftpConnector sftpConnector = new SftpConnector();
-                String configuration = Files.readString(Path.of("src/main/resources/static/configuration2.json"));
-                SftpConfiguration sftpConfiguration = mapper.readValue(configuration, SftpConfiguration.class);
-                System.out.println(sftpConfiguration);
-                System.out.println(properties);
-                sftpConnector.setSftpConfiguration(sftpConfiguration);
-                sftpConnector.setProperties(properties);
-                sftpConnector.connect();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }).start();
+//        new Thread(() -> {
+//            try {
+//                SftpConnector sftpConnector = new SftpConnector();
+//                String configuration = Files.readString(Path.of("src/main/resources/static/configuration2.json"));
+//                SftpConfiguration sftpConfiguration = mapper.readValue(configuration, SftpConfiguration.class);
+//                System.out.println(sftpConfiguration);
+//                System.out.println(properties);
+//                sftpConnector.setSftpConfiguration(sftpConfiguration);
+//                sftpConnector.setProperties(properties);
+//                sftpConnector.connect();
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
+//        }).start();
     }
 }
